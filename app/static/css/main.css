@@ -1,0 +1,86 @@
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+html,
+body {
+    margin: 0;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+.page-header {
+    width: 100%;
+    padding: 1em;
+}
+.page-header h1 {
+    display: block;
+    background: url('../images/ITRC-mistral.png') no-repeat top left;
+    width: 500px;
+    height: 60px;
+    text-indent: -300px;
+    overflow: hidden;
+    margin: 0;
+}
+.main-wrapper {
+    display: flex;
+    align-items: stretch;
+
+    position: absolute;
+    top: 92px; /* height of .page-header including padding */
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.main-map-wrap {
+    position: relative;
+    order: 2;
+    flex: 1 100%;
+}
+.main-map {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.leaflet-div-icon {
+    background: #fff;
+    border: 0;
+    padding: 1px;
+    border-radius: 50%;
+    text-align: center;
+    box-shadow: 0px 0px 2px 1px;
+}
+.leaflet-div-icon .fa {
+    display: block;
+    line-height: 16px; /* height/width of divIcon, set in js */
+}
+.icon-focus {
+    box-shadow: #ffeb00 0px 0px 10px 3px;
+}
+.icon-dependent {
+    box-shadow: #04ff00 0px 0px 10px 3px;
+}
+.main-controls {
+    order: 1;
+    flex: 1 20%;
+    overflow-y: scroll;
+    min-width: 20em;
+    padding: 0 0.5em;
+}
+.main-controls .details-key {
+    text-transform: uppercase;
+    color: #555;
+    font-size: 0.7em;
+    margin: 1em 0 0;
+}
+.main-controls .details-value {
+    margin: 0.5em 0;
+}
+.main-controls .details-value .fa {
+    margin-right: 0.2em;
+}
+.main-controls .details-value span {
+    text-transform: capitalize;
+}
