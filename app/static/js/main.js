@@ -20,16 +20,24 @@ L.tileLayer(basemap_url, {
 
 APP.layers.base_lines = L.layerGroup().addTo(map);
 
-var node_icon_html_by_type = {
-    "bank": '<i class="fa fa-money" aria-hidden="true"></i>',
-    "electricity_source": '<i class="fa fa-bolt" aria-hidden="true"></i>',
-    "electricity_sink": '<i class="fa fa-bolt" aria-hidden="true"></i>',
-    "fuel": '<i class="fa fa-car" aria-hidden="true"></i>',
-    "hospital": '<i class="fa fa-hospital-o" aria-hidden="true"></i>',
-    "school": '<i class="fa fa-graduation-cap" aria-hidden="true"></i>',
-    "waste_water_treatment": '<i class="fa fa-tint" aria-hidden="true"></i>',
-    "water_treatment": '<i class="fa fa-tint" aria-hidden="true"></i>',
-    "unknown": '<i class="fa fa-question" aria-hidden="true"></i>'
+
+function get_icon_html(type){
+    var node_icon_class_by_type = {
+        "bank": 'money',
+        "electricity_source": 'bolt',
+        "electricity_sink": 'bolt',
+        "fuel": 'car',
+        "hospital": 'hospital-o',
+        "school": 'graduation-cap',
+        "waste_water_treatment": 'tint',
+        "water_treatment": 'tint',
+        "unknown": 'question'
+    }
+    var icon_class = node_icon_class_by_type[type];
+    if(icon_class === undefined){
+         icon_class = node_icon_class_by_type["unknown"];
+    }
+    return '<i class="fa fa-'+icon_class+'" aria-hidden="true"></i>';
 }
 
 function setup(data){
@@ -44,10 +52,7 @@ function setup(data){
 function addLayer(features){
     return L.geoJSON(features, {
         pointToLayer: function (feature, latlng) {
-            var html = node_icon_html_by_type[feature.properties.type];
-            if (html === undefined){
-                html = node_icon_html_by_type["unknown"];
-            }
+            var html = get_icon_html(feature.properties.type);
             var marker = L.marker(latlng, {
                 icon: L.divIcon({
                     html: html,
@@ -123,7 +128,7 @@ function createDetailsEl(props){
 
     type_value.className = "details-value";
 
-    type_icon.innerHTML = node_icon_html_by_type[props.type]
+    type_icon.innerHTML = get_icon_html(props.type);
     type_value.appendChild(type_icon);
 
     type_value_text.textContent = props.type.replace("_"," ");
