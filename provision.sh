@@ -38,6 +38,7 @@ pip2 install --upgrade pip
 
 # global install of python packages
 pip2 install -r /vagrant/requirements.txt
+pip2 install -r /vagrant/test-requirements.txt
 
 # copy bash config to vagrant home
 cp /vagrant/config/.bashrc /home/vagrant/.bashrc
