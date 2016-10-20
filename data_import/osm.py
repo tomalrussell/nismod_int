@@ -92,6 +92,14 @@ class NodeHandler(object):
         return "POINT({} {})".format(lon, lat)
 
 if __name__ == '__main__':
+    """Initial setup: run this as a script to import osm.pbf to postgres,
+    for example, with monaco downloaded from Geofabrik:
+
+        python osm.py ./monaco-latest.osm.pbf
+
+    Possible enhancement: set up nismod_int as a package that exposes an
+    `import` command
+    """
     if len(sys.argv) != 2:
         print("Usage: python osm.py <path_to_file>")
         exit()
