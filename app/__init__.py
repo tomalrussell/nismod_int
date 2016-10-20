@@ -4,6 +4,8 @@ from dotenv import load_dotenv, find_dotenv
 from flask import Flask, request, make_response, render_template, safe_join
 import json
 import os
+import psycopg2
+import psycopg2.extras
 import sys
 
 # load environment variables
@@ -23,24 +25,35 @@ def hello():
     """
     return render_template("index.html")
 
-@app.route("/data/<filename>")
-def serve_static_data(filename):
-    """Serve json data with correct mime type
+@app.route("/data/<area_name>")
+def serve_data(area_name):
+    """Serve json data from postgres
     """
-    path = safe_join(DATA_DIR, filename)
-    if not os.path.exists(path):
-        data = '{"error": "Not found"}'
-        code = 404
-    else:
-        if PY3:
-            with open(path, 'r', encoding='utf-8') as file_handle:
-                data = file_handle.read()
-        else:
-            with open(path, 'r') as file_handle:
-                data = file_handle.read()
-        code = 200
+    conn = psycopg2.connect("dbname=vagrant user=vagrant")
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    sql = """SELECT
+        ST_AsGeoJSON(location)::json as geometry,
+        node_id,
+        node_name,
+        type
+    FROM sos_i_nodes"""
 
-    resp = make_response(data, code)
+    cur.execute(sql)
+
+    features = [{
+        "type": "Feature",
+        "geometry": f["geometry"],
+        "properties": {
+            "id": f["node_id"],
+            "name": f["node_name"],
+            "type": f["type"]
+        }
+    } for f in cur]
+    geojson = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+    resp = make_response(json.dumps(geojson), 200)
     resp.headers['Content-Type'] = "application/json"
     return resp
 
