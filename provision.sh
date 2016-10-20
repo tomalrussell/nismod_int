@@ -1,9 +1,9 @@
 # Update package lists
 apt-get update
 # Install OS packages
-apt-get install -y build-essential git vim-nox python-pip postgresql \
+apt-get install -y build-essential git vim-nox tmux python-pip postgresql \
     postgresql-contrib postgis libpq-dev nginx-core python-dev \
-    protobuf-compiler libprotobuf-dev
+    protobuf-compiler libprotobuf-dev gdal-bin
 
 # Database config to listen on network connection
 sed -i "s/#listen_address.*/listen_addresses 'localhost'/" \
