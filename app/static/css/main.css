@@ -9,18 +9,48 @@ body {
     margin: 0;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
+.clearfix:after {
+    /* use on containers whose children are floated, to let them contribute
+     * to the implicit height
+     * - see https://css-tricks.com/snippets/css/clear-fix/
+     */
+    content: "";
+    display: table;
+    clear: both;
+}
 .page-header {
     width: 100%;
     padding: 1em;
 }
 .page-header h1 {
     display: block;
+    float: left;
     background: url('../images/ITRC-mistral.png') no-repeat top left;
     width: 500px;
     height: 60px;
     text-indent: -300px;
     overflow: hidden;
     margin: 0;
+}
+.page-header .clear-cache-reload {
+    float: right;
+    margin: 12px 0; /* to vertically center, depends on .page-header h1 height */
+}
+.button-link {
+    display: block;
+    padding: 0.5em 0.75em;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    color: #222;
+    text-decoration: none;
+}
+.button-link:hover,
+.button-link:focus,
+.button-link:active {
+    background: #eee;
+}
+.button-link .fa {
+    margin-left: 0.2em;
 }
 .main-wrapper {
     display: flex;
