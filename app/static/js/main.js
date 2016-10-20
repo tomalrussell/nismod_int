@@ -2,29 +2,47 @@
 
 // APP global to hold application state for direct reference
 var APP = window.APP = {
-    layers: {}
+    // layers is a collection of leaflet map layers
+    // each layer contains related features (typically grouped by type)
+    layers: {},
+
+    // layer_key => boolean, indicating whether is layer is active or not
+    activeLayers: {},
+
+    // possible locations for map view
+    // - could load from database areas table?
+    map_locations: {
+        gaza: {
+            lon: 34.4,
+            lat: 31.4,
+            zoom: 11
+        }
+    },
+
+    // leaflet map
+    map: undefined
 }
 
-// possible locations for map view
-// - could load from database areas table?
-APP.map_locations = {
-    gaza: {
-        lon: 34.4,
-        lat: 31.4,
-        zoom: 11
-    }
+function setupMap(){
+    // set up leaflet map with plain geographical base layer
+    var map = APP.map = L.map('main-map').setView(APP.map_locations.gaza, APP.map_locations.gaza.zoom);
+    var basemap_url = "http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+    L.tileLayer(basemap_url, {
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(map);
+
+    // layer to hold lines (added first to draw under subsequent point layers)
+    APP.layers.base_lines = L.layerGroup().addTo(map);
 }
 
-// set up leaflet map with plain geographical base layer
-var map = L.map('main-map').setView(APP.map_locations.gaza, APP.map_locations.gaza.zoom);
-var basemap_url = "http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-L.tileLayer(basemap_url, {
-    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
-}).addTo(map);
-
-// layer to hold lines (added first to draw under subsequent point layers)
-APP.layers.base_lines = L.layerGroup().addTo(map);
-
+function setupMapData(data){
+    var features_by_type = _.groupBy(data.features, function(feature){
+        return feature.properties.type;
+    });
+    _.map(features_by_type, function(features, type){
+        APP.layers[type] = addLayer(features);
+    });
+}
 
 function get_icon_html(type){
     // map from feature type to fontawesome icon
@@ -44,15 +62,6 @@ function get_icon_html(type){
          icon_class = node_icon_class_by_type["unknown"];
     }
     return '<i class="fa fa-'+icon_class+'" aria-hidden="true"></i>';
-}
-
-function setup(data){
-    var features_by_type = _.groupBy(data.features, function(feature){
-        return feature.properties.type;
-    });
-    _.map(features_by_type, function(features, type){
-        APP.layers[type] = addLayer(features);
-    });
 }
 
 function addLayer(features){
@@ -89,7 +98,7 @@ function addLayer(features){
             return marker;
         },
 
-    }).addTo(map);
+    }).addTo(APP.map);
 }
 
 function showDetails(feature){
@@ -98,17 +107,15 @@ function showDetails(feature){
     var details_el = createDetailsEl(feature.properties);
     mountNode.innerHTML = "";
     mountNode.appendChild(details_el);
+}
 
-    // get geojson of all electricity_source_features and find the nearest
-    var electricity_source_features = APP.layers.electricity_source.toGeoJSON();
-    var nearest_electricity_source = turf.nearest(feature, electricity_source_features);
+function highlightDependency(feature, dependency){
+    // add class to highlight dependency
+    var marker = APP.layers[dependency.properties.type].getLayer(dependency.properties.id);
+    marker._icon.classList.add("icon-dependent");
 
-    // add class to highlight nearest_electricity_source
-    var layer = APP.layers.electricity_source.getLayer(nearest_electricity_source.properties.id);
-    layer._icon.classList.add("icon-dependent");
-
-    // draw line from this feature to nearest_electricity_source
-    var line = L.geoJSON(turf.lineString([feature.geometry.coordinates,nearest_electricity_source.geometry.coordinates]), {color: "#3399ff"});
+    // draw line from this feature to dependency
+    var line = L.geoJSON(turf.lineString([feature.geometry.coordinates,dependency.geometry.coordinates]), {color: "#3399ff"});
     APP.layers.base_lines.addLayer(line);
 }
 
@@ -117,6 +124,7 @@ function closeDetails(feature){
     var mountNode = document.querySelector(".main-controls");
     mountNode.innerHTML = "";
 
+    // clear all dependency lines
     APP.layers.base_lines.clearLayers();
 }
 
@@ -150,7 +158,7 @@ function createDetailsEl(props){
     type_icon.innerHTML = get_icon_html(props.type);
     type_value.appendChild(type_icon);
 
-    type_value_text.textContent = props.type.replace("_"," ");
+    type_value_text.textContent = props.type.replace(/_/g," ");
     type_value.appendChild(type_value_text);
 
     wrap.appendChild(type_value);
@@ -164,32 +172,38 @@ function clear_cache(){
 
 function clear_cache_and_reload(){
     clear_cache();
-    window.location.reload(false);
+    window.location.reload(true);
 }
 
-var reload_button = document.querySelector(".clear-cache-reload");
-if (reload_button){
-    reload_button.addEventListener("click", function(e){
-        e.preventDefault();
-        clear_cache_and_reload();
-    });
-}
+function init(){
+    setupMap();
 
-// assume localStorage available
-// - could 'cut the mustard' and fall back to no js for older browsers
-var cached = localStorage.getItem('gaza_infrastructure.json')
-if(cached !== null){
-    var data = JSON.parse(cached);
-    console.log(data);
-    setup(data, map);
-} else {
-    fetch('/data/gaza_infrastructure.json')
-    .then(function(response){
-        return response.json().then(function(json){
-            localStorage.setItem('gaza_infrastructure.json', JSON.stringify(json));
-            setup(json, map);
+    var reload_button = document.querySelector(".clear-cache-reload");
+    if (reload_button){
+        reload_button.addEventListener("click", function(e){
+            e.preventDefault();
+            clear_cache_and_reload();
         });
-    });
+    }
+
+    // assume localStorage available
+    // - could 'cut the mustard' and fall back to no js for older browsers
+    var cached = localStorage.getItem('gaza')
+    if(cached !== null){
+        var data = JSON.parse(cached);
+        console.log(data);
+        setupMapData(data, APP.map);
+    } else {
+        fetch('/data/gaza')
+        .then(function(response){
+            return response.json().then(function(json){
+                localStorage.setItem('gaza', JSON.stringify(json));
+                setupMapData(json, APP.map);
+            });
+        });
+    }
 }
+
+init();
 
 })(window, document);

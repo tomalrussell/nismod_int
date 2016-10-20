@@ -36,9 +36,10 @@ def serve_data(area_name):
         node_id,
         node_name,
         type
-    FROM sos_i_nodes"""
+    FROM sos_i_nodes
+    WHERE area = %s"""
 
-    cur.execute(sql)
+    cur.execute(sql, (area_name, ))
 
     features = [{
         "type": "Feature",
