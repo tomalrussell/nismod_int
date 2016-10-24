@@ -250,30 +250,33 @@ function clear_cache_and_reload(){
 }
 
 function init(){
-    setupMap();
+    var mapEl = document.querySelector("#main-map");
+    if(mapEl){
+        setupMap();
 
-    var reload_button = document.querySelector(".clear-cache-reload");
-    if (reload_button){
-        reload_button.addEventListener("click", function(e){
-            e.preventDefault();
-            clear_cache_and_reload();
-        });
-    }
-
-    // assume localStorage available
-    // - could 'cut the mustard' and fall back to no js for older browsers
-    var cached = localStorage.getItem('gaza')
-    if(cached !== null){
-        var data = JSON.parse(cached);
-        setupMapData(data, APP.map);
-    } else {
-        fetch('/data/gaza')
-        .then(function(response){
-            return response.json().then(function(json){
-                localStorage.setItem('gaza', JSON.stringify(json));
-                setupMapData(json, APP.map);
+        var reload_button = document.querySelector(".clear-cache-reload");
+        if (reload_button){
+            reload_button.addEventListener("click", function(e){
+                e.preventDefault();
+                clear_cache_and_reload();
             });
-        });
+        }
+
+        // assume localStorage available
+        // - could 'cut the mustard' and fall back to no js for older browsers
+        var cached = localStorage.getItem('gaza')
+        if(cached !== null){
+            var data = JSON.parse(cached);
+            setupMapData(data, APP.map);
+        } else {
+            fetch('/data/gaza')
+            .then(function(response){
+                return response.json().then(function(json){
+                    localStorage.setItem('gaza', JSON.stringify(json));
+                    setupMapData(json, APP.map);
+                });
+            });
+        }
     }
 }
 
