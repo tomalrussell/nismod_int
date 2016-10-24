@@ -8,6 +8,7 @@ var APP = window.APP = {
 
     // layer_key => boolean, indicating whether is layer is active or not
     activeLayers: {},
+    utilLayerKeys: [],
 
     // possible locations for map view
     // - could load from database areas table?
@@ -33,6 +34,8 @@ function setupMap(){
 
     // layer to hold lines (added first to draw under subsequent point layers)
     APP.layers.base_lines = L.layerGroup().addTo(map);
+    // save to list of util layers, e.g not to show in nav
+    APP.utilLayerKeys.push("base_lines");
 }
 
 function setupMapData(data){
@@ -41,10 +44,16 @@ function setupMapData(data){
     });
     _.map(features_by_type, function(features, type){
         APP.layers[type] = addLayer(features);
+        APP.activeLayers[type] = true;
     });
+
+    updateTypeNav();
+
+    var controls_form = document.querySelector(".main-controls");
+    controls_form.addEventListener("change", updateActiveLayers);
 }
 
-function get_icon_html(type){
+function getIconHtml(type){
     // map from feature type to fontawesome icon
     var node_icon_class_by_type = {
         "bank": 'money',
@@ -53,6 +62,7 @@ function get_icon_html(type){
         "fuel": 'car',
         "hospital": 'hospital-o',
         "school": 'graduation-cap',
+        "tower": 'wifi',
         "waste_water_treatment": 'tint',
         "water_treatment": 'tint',
         "unknown": 'question'
@@ -68,7 +78,7 @@ function addLayer(features){
     return L.geoJSON(features, {
         pointToLayer: function (feature, latlng) {
             // create marker for this feature with an icon
-            var html = get_icon_html(feature.properties.type);
+            var html = getIconHtml(feature.properties.type);
             var marker = L.marker(latlng, {
                 icon: L.divIcon({
                     html: html,
@@ -77,7 +87,7 @@ function addLayer(features){
             });
 
             // set up id for ease of reference later
-            marker._leaflet_id = feature.properties.id;
+            marker._leaflet_id = feature.properties.type + feature.properties.id;
 
             // define click interaction, to show details on focus
             marker.on("click", function(e){
@@ -96,14 +106,12 @@ function addLayer(features){
                 }
             });
             return marker;
-        },
-
+        }
     }).addTo(APP.map);
 }
 
 function showDetails(feature){
-    var mountNode = document.querySelector(".main-controls");
-    console.log(feature.properties);
+    var mountNode = document.querySelector(".main-controls .node-details");
     var details_el = createDetailsEl(feature.properties);
     mountNode.innerHTML = "";
     mountNode.appendChild(details_el);
@@ -111,7 +119,7 @@ function showDetails(feature){
 
 function highlightDependency(feature, dependency){
     // add class to highlight dependency
-    var marker = APP.layers[dependency.properties.type].getLayer(dependency.properties.id);
+    var marker = APP.layers[dependency.properties.type].getLayer(dependency.properties.type + dependency.properties.id);
     marker._icon.classList.add("icon-dependent");
 
     // draw line from this feature to dependency
@@ -121,11 +129,77 @@ function highlightDependency(feature, dependency){
 
 function closeDetails(feature){
     // clear/close details sidebar
-    var mountNode = document.querySelector(".main-controls");
+    var mountNode = document.querySelector(".main-controls .node-details");
     mountNode.innerHTML = "";
 
     // clear all dependency lines
     APP.layers.base_lines.clearLayers();
+}
+
+function updateTypeNav(){
+    var nav_el = document.querySelector(".main-controls .node-types-nav");
+    nav_el.innerHTML = "";
+    var sorted_keys = _.keys(APP.activeLayers).sort()
+
+    _.each(sorted_keys, function(key){
+        var link_el
+        if ( !_.contains(APP.utilLayerKeys, key) ){
+            link_el = createTypeNavEl({"type": key, "active": APP.activeLayers[key]});
+            nav_el.appendChild(link_el);
+        }
+    });
+}
+
+function updateActiveLayers(){
+    _.each(APP.activeLayers, function(was_active, key){
+        var checkbox = document.querySelector("#node_type_"+key);
+        var layer = APP.layers[key];
+
+        if (checkbox){
+            if(checkbox.checked){
+                if(!was_active){
+                    APP.map.addLayer(layer);
+                }
+            } else {
+                if(was_active){
+                    APP.map.removeLayer(layer);
+                }
+            }
+
+            APP.activeLayers[key] = checkbox.checked;
+        }
+    });
+}
+
+function createTypeNavEl(props){
+    var wrap = document.createElement("div");
+    var input = document.createElement("input")
+    var label = document.createElement("label");
+    var type_icon = document.createElement("span");
+    var type_value_text = document.createElement("span");
+
+    input.setAttribute("value", props.type);
+    input.setAttribute("id", "node_type_"+props.type);
+    input.setAttribute("name", "node_types[]")
+    input.setAttribute("type", "checkbox")
+    if(props.active){
+        input.setAttribute("checked", "checked");
+    }
+
+    label.classList.add("button-link");
+    label.setAttribute("for", "node_type_"+props.type);
+
+
+    type_icon.innerHTML = getIconHtml(props.type);
+    label.appendChild(type_icon);
+
+    type_value_text.textContent = props.type.replace(/_/g," ");
+    label.appendChild(type_value_text);
+
+    wrap.appendChild(input);
+    wrap.appendChild(label);
+
+    return wrap;
 }
 
 function createDetailsEl(props){
@@ -155,7 +229,7 @@ function createDetailsEl(props){
 
     type_value.className = "details-value";
 
-    type_icon.innerHTML = get_icon_html(props.type);
+    type_icon.innerHTML = getIconHtml(props.type);
     type_value.appendChild(type_icon);
 
     type_value_text.textContent = props.type.replace(/_/g," ");
@@ -191,7 +265,6 @@ function init(){
     var cached = localStorage.getItem('gaza')
     if(cached !== null){
         var data = JSON.parse(cached);
-        console.log(data);
         setupMapData(data, APP.map);
     } else {
         fetch('/data/gaza')

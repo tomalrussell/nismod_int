@@ -38,6 +38,7 @@ body {
 }
 .button-link {
     display: block;
+    cursor: pointer;
     padding: 0.5em 0.75em;
     border: 1px solid #ddd;
     border-radius: 3px;
@@ -51,6 +52,45 @@ body {
 }
 .button-link .fa {
     margin-left: 0.2em;
+}
+.checkbox-list {
+    border: 0 none;
+    padding: 0;
+    margin: 0;
+}
+.checkbox-list .button-link {
+    color: #aaa;
+}
+.checkbox-list input:checked + .button-link {
+    color: #222;
+}
+.checkbox-list > div {
+    position: relative;
+}
+.checkbox-list input {
+    position: absolute;
+    top: 0.5em;
+    left: 0.5em;
+    opacity: 0;
+    pointer-events: none;
+}
+.checkbox-list .button-link .fa {
+    margin-left: 0;
+    margin-right: 0.5em;
+    width: 1.2em;
+    text-align: center;
+}
+.checkbox-list .button-link {
+    text-transform: capitalize;
+    border-bottom: 0 none;
+    border-radius: 0;
+}
+.checkbox-list > :first-child .button-link {
+    border-radius: 3px 3px 0 0;
+}
+.checkbox-list > :last-child .button-link {
+    border-bottom: 1px solid #ddd;
+    border-radius: 0 0 3px 3px;
 }
 .main-wrapper {
     display: flex;
