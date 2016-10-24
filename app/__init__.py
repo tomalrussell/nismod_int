@@ -25,6 +25,13 @@ def hello():
     """
     return render_template("index.html")
 
+@app.route("/areas")
+def areas_page():
+    """List available areas
+    """
+    areas = ["gaza", "uk"]
+    return render_template("areas.html", areas=areas)
+
 @app.route("/data/<area_name>")
 def serve_data(area_name):
     """Serve json data from postgres
