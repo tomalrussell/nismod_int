@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="content-wrapper">
+    <ul class="nodes">
+    {%- for node in nodes %}
+        <li><a href="/nodes/{{ node.id }}">{{ node.name }}</a> {{node.status}} {{node.type}}</li>
+    {%- endfor %}
+    </ul>
+</main>
+{% endblock %}
