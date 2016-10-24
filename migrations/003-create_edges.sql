@@ -7,7 +7,7 @@ CREATE TABLE sos_i_edges (
     , sector text -- Infrastructure sector, eg transport, electricity, water
     , from_node_id integer -- Node id from which the edge begins
     , to_node_id integer -- Node id where the edge ends
-    , last_updated timestamp with time zone -- Date that this data was last updated
+    , last_updated timestamp with time zone DEFAULT now() -- Date that this data was last updated
     , data_source_id integer -- Data grouped by source
     , ref_key text -- Tracking code or number for connection to external data reference
     , location geography(LINESTRING, 4326) -- Edge geometry (as a line, could be as minimal as two points)
