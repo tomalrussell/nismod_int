@@ -30,7 +30,13 @@ def areas_page():
     """List available areas
     """
     areas = ["gaza", "uk"]
-    return render_template("areas.html", areas=areas)
+    return render_template("area_list.html", areas=areas)
+
+@app.route("/areas/<area_name>")
+def area_page(area_name):
+    """Area details
+    """
+    return render_template("area_single.html", area=area_name)
 
 @app.route("/data/<area_name>")
 def serve_data(area_name):

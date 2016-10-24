@@ -25,12 +25,15 @@ body {
 .page-header h1 {
     display: block;
     float: left;
+    margin: 0;
+}
+.page-header h1 a {
+    display: block;
     background: url('../images/ITRC-mistral.png') no-repeat top left;
     width: 250px;
     height: 60px;
     text-indent: -300px;
     overflow: hidden;
-    margin: 0;
 }
 .page-header .clear-cache-reload {
     float: right;
@@ -80,17 +83,25 @@ body {
     width: 1.2em;
     text-align: center;
 }
-.checkbox-list .button-link {
+.checkbox-list .button-link,
+.vertical-button-list .button-link {
     text-transform: capitalize;
     border-bottom: 0 none;
     border-radius: 0;
 }
-.checkbox-list > :first-child .button-link {
+.checkbox-list > :first-child .button-link,
+.vertical-button-list > :first-child .button-link {
     border-radius: 3px 3px 0 0;
 }
-.checkbox-list > :last-child .button-link {
+.checkbox-list > :last-child .button-link,
+.vertical-button-list > :last-child .button-link {
     border-bottom: 1px solid #ddd;
     border-radius: 0 0 3px 3px;
+}
+.vertical-button-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 .main-wrapper {
     display: flex;
