@@ -71,7 +71,7 @@ def node_page(node_id):
             with get_conn() as conn:
                 node.delete(conn)
 
-            return render_template("deleted.html", type="Node")
+            return render_template("generic_deleted.html", type="Node")
 
         else:
             node.set_name(data.get("name"))
