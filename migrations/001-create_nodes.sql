@@ -10,6 +10,7 @@ CREATE TABLE sos_i_nodes (
     , type text -- Node type (e.g. INTER, PUMP, CCGT, etc.) - could normalize to (integer) foreign key to nodetype_id in sos_lu_entity_types
     , area text -- Area where node resides - could normalize to (integer) foreign key to nodetype_id in sos_lu_areas
     , function text -- Node function (source, sink, intermediate, demand)
+    , condition text -- Rating of node condition (good, average, poor)
     , last_updated timestamp with time zone DEFAULT now() -- Date that this data was last updated
     , data_source_id integer -- Data grouped by source, Foreign key to area_id in sos_lu_data_source
     , status data_status DEFAULT 'staged' -- Data is staged on import, then manually approved and eventually archived
