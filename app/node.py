@@ -72,16 +72,20 @@ class Node:
                 self.function,
                 self.condition,
                 self.status,
+                datetime.datetime.now(),
                 self.id, ))
 
         return self
 
     def delete(self, conn):
-        with conn.cursor() as cur:
-            sql = """DELETE FROM sos_i_nodes
-            WHERE node_id = %s"""
-            cur.execute(sql, (self.id, ))
-
+        if self.status == "staged":
+            # only staged nodes can be deleted, otherwise only archive
+            with conn.cursor() as cur:
+                sql = """DELETE FROM sos_i_nodes
+                WHERE node_id = %s"""
+                cur.execute(sql, (self.id, ))
+        else:
+            raise StatusError("This node cannot be deleted (only nodes that are staged can be deleted).")
 
     def geometry(self):
         return {
@@ -127,6 +131,10 @@ class Node:
         if self.status == "approved" and status == "archived":
             # status can change from approved->archived
             self.status = "archived"
+
+class StatusError(Exception):
+    """Raise when the node's status forbids some action
+    """
 
 def get_nodes(conn, area=None):
     """Get a list of nodes
