@@ -53,7 +53,7 @@ function setupMapData(data){
     controls_form.addEventListener("change", updateActiveLayers);
 }
 
-function getIconHtml(type){
+function getIconClass(type){
     // map from feature type to fontawesome icon
     var node_icon_class_by_type = {
         "bank": 'money',
@@ -71,6 +71,11 @@ function getIconHtml(type){
     if(icon_class === undefined){
          icon_class = node_icon_class_by_type["unknown"];
     }
+    return icon_class;
+}
+
+function getIconHtml(type){
+    var icon_class = getIconClass(type);
     return '<i class="fa fa-'+icon_class+'" aria-hidden="true"></i>';
 }
 
@@ -173,69 +178,47 @@ function updateActiveLayers(){
 
 function createTypeNavEl(props){
     var wrap = document.createElement("div");
-    var input = document.createElement("input")
-    var label = document.createElement("label");
-    var type_icon = document.createElement("span");
-    var type_value_text = document.createElement("span");
+    var template = `
+    <input value="{{ type }}" id="node_type_{{ type }}" name="node_types[]" type="checkbox" {{#active}}checked="checked"{{/active}} >
+    <label class="button-link" for="node_type_{{ type }}">
+        <i class="fa fa-{{ icon_class }}" aria-hidden="true"></i>
+        {{ type_text }}
+    </label>
+    `;
+    Mustache.parse(template);
 
-    input.setAttribute("value", props.type);
-    input.setAttribute("id", "node_type_"+props.type);
-    input.setAttribute("name", "node_types[]")
-    input.setAttribute("type", "checkbox")
-    if(props.active){
-        input.setAttribute("checked", "checked");
-    }
+    props.icon_class = getIconClass(props.type);
+    props.type_text = props.type.replace(/_/g," ");
 
-    label.classList.add("button-link");
-    label.setAttribute("for", "node_type_"+props.type);
-
-
-    type_icon.innerHTML = getIconHtml(props.type);
-    label.appendChild(type_icon);
-
-    type_value_text.textContent = props.type.replace(/_/g," ");
-    label.appendChild(type_value_text);
-
-    wrap.appendChild(input);
-    wrap.appendChild(label);
+    var rendered = Mustache.render(template, props);
+    wrap.innerHTML = rendered;
 
     return wrap;
 }
 
 function createDetailsEl(props){
     // template for details sidebar
-    // - could use template library (react/mustache?) if there's a need for
+    // - using simple Mustache template - anything between {{ }} is replaced
+    // - could use a more heavy-duty library (react?) if there's a need for
     //   more complex templating and data updates
     var wrap = document.createElement("div");
-    var name_key = document.createElement("h3");
-    var name_value = document.createElement("p");
-    var type_key = document.createElement("h3");
-    var type_value = document.createElement("p");
-    var type_icon = document.createElement("span");
-    var type_value_text = document.createElement("span");
+    var template = `
+    <h4 class="details-key">Name</h4>
+    <p class="details-value">{{ name }}</p>
+    <h4 class="details-key">Type</h4>
+    <p class="details-value">
+        <i class="fa fa-{{ icon_class }}" aria-hidden="true"></i>
+        {{ type_text }}
+    </p>
+    <a href="/nodes/{{ id }}">Edit</a>`;
+    Mustache.parse(template);
 
+    props.icon_class = getIconClass(props.type);
+    props.type_text = props.type.replace(/_/g," ");
 
-    name_key.className = "details-key";
-    name_key.textContent = "Name";
-    wrap.appendChild(name_key);
-
-    name_value.className = "details-value";
-    name_value.textContent = props.name;
-    wrap.appendChild(name_value);
-
-    type_key.className = "details-key";
-    type_key.textContent = "Type";
-    wrap.appendChild(type_key);
-
-    type_value.className = "details-value";
-
-    type_icon.innerHTML = getIconHtml(props.type);
-    type_value.appendChild(type_icon);
-
-    type_value_text.textContent = props.type.replace(/_/g," ");
-    type_value.appendChild(type_value_text);
-
-    wrap.appendChild(type_value);
+    var rendered = Mustache.render(template, props);
+    // mustache renders to a string, so set as innerHTML and return DOM node
+    wrap.innerHTML = rendered;
 
     return wrap;
 }
