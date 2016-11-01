@@ -9,6 +9,7 @@ import psycopg2.extras
 import sys
 # todo: fix absolute/relative import (from app.node should work?)
 from node import Node
+from node_type import get_node_types
 
 # load environment variables
 load_dotenv(find_dotenv())
@@ -90,7 +91,8 @@ def node_page(node_id):
 
     data = cur.fetchone()
     node = Node(data)
-    return render_template("node_single.html", node=node)
+    node_types = get_node_types(conn)
+    return render_template("node_single.html", node=node, node_types=node_types)
 
 
 @app.route("/areas")
