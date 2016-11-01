@@ -210,8 +210,8 @@ function createDetailsEl(props){
         <i class="fa fa-{{ icon_class }}" aria-hidden="true"></i>
         {{ type_text }}
     </p>
-    <a href="/nodes/{{ id }}">View</a>
-    <a href="/nodes/{{ id }}?edit=true">Edit</a>`;
+    <a href="/nodes/{{ id }}" class="button-link">View</a>
+    <a href="/nodes/{{ id }}?edit=true" class="button-link">Edit</a>`;
     Mustache.parse(template);
 
     props.icon_class = getIconClass(props.type);

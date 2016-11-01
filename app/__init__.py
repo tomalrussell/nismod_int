@@ -78,6 +78,13 @@ def node_page(node_id):
             node.set_type(data.get("type"))
             node.set_function(data.get("function"))
             node.set_condition(data.get("condition"))
+
+            if data.get("status_approved"):
+                node.set_status("approved")
+
+            if data.get("status_archived"):
+                node.set_status("archived")
+
             with get_conn() as conn:
                 node.save(conn)
             return render_template("node_single_edit.html", node=node, node_types=node_types)

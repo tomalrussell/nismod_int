@@ -7,7 +7,15 @@
         <input type="text" name="name" value="{{ node.name }}">
 
         <h4>Status</h4>
-        <p>{{node.status}}</p>
+        <p>
+            Currently: {{ node.status }}.
+            {% if node.status is equalto "staged" %}
+            <label><input type="checkbox" name="status_approved">Approve?</label>
+            {% endif %}
+            {% if node.status is equalto "approved" %}
+            <label><input type="checkbox" name="status_archived">Archive?</label>
+            {% endif %}
+        </p>
 
         <h4>Type</h4>
         <select name="type">
@@ -29,9 +37,11 @@
             <input type="submit" value="Save" class="button">
         </div>
     </form>
+    {% if node.status is equalto "staged" %}
     <form action="" method="POST">
         <input type="hidden" name="x-method" value="DELETE">
         <input type="submit" value="Delete" class="button">
     </form>
+    {% endif %}
 </main>
 {% endblock %}
