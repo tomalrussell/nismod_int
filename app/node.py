@@ -2,6 +2,7 @@
 """Infrastructure nodes: assets and points of demand
 """
 from __future__ import print_function
+import datetime
 
 class Node:
     """A node in the infrastructure network
@@ -14,6 +15,7 @@ class Node:
         self.type = "unknown"
         self.function = "unknown"
         self.condition = "unknown"
+        self.last_updated = datetime.datetime.fromtimestamp(0)
         self.status = None
 
         if data is not None:
@@ -27,6 +29,7 @@ class Node:
         self.type = data["type"]
         self.function = data["function"]
         self.condition = data["condition"]
+        self.last_updated = data["last_updated"]
         self.set_status(data["status"])
 
     def load_by_id(self, conn, node_id):
@@ -39,6 +42,7 @@ class Node:
                 type,
                 function,
                 condition,
+                last_updated,
                 status
             FROM sos_i_nodes
             WHERE node_id = %s"""
@@ -61,7 +65,8 @@ class Node:
                 type = %s,
                 function = %s,
                 condition = %s,
-                status = %s
+                status = %s,
+                last_updated = %s
             WHERE node_id = %s"""
 
             cur.execute(sql, (
@@ -103,6 +108,7 @@ class Node:
                 "type": self.type,
                 "function": self.function,
                 "condition": self.condition,
+                "last_updated": self.last_updated,
                 "status": self.status
             }
         }
@@ -148,7 +154,8 @@ def get_nodes(conn, area=None):
             type,
             function,
             condition,
-            status
+            status,
+            last_updated
         FROM sos_i_nodes"""
 
         if area is not None:

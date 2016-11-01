@@ -2,6 +2,8 @@
 {% block content %}
 <main class="content-wrapper">
     <h1>Node Details</h1>
+    <p><small>Last updated: {{ node.last_updated.strftime("%H:%M, %d %B %Y") }}</small></p>
+
     <h4>Name</h4>
     <p>{{ node.name }}</p>
 
