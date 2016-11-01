@@ -1,10 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
 <main class="content-wrapper">
-    <ul class="nodes">
+    <table class="nodes report-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Type</th>
+    </tr>
+    </thead>
+    <tbody>
     {%- for node in nodes %}
-        <li><a href="/nodes/{{ node.id }}">{{ node.name }}</a> {{node.status}} {{node.type}}</li>
+    <tr>
+        <td><a href="/nodes/{{ node.id }}">{{ node.name }}</a></td>
+        <td>{{node.status}}</td>
+        <td>{{node.type}}</td>
+    </tr>
     {%- endfor %}
-    </ul>
+    </tbody>
 </main>
 {% endblock %}
