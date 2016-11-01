@@ -1,7 +1,7 @@
 """Web frontend - flask app
 """
 from dotenv import load_dotenv, find_dotenv
-from flask import Flask, request, make_response, render_template, safe_join
+from flask import Flask, request, make_response, render_template, safe_join, abort
 import json
 import os
 import psycopg2
@@ -26,6 +26,20 @@ def hello():
     """Render index.html page at site root
     """
     return render_template("index.html")
+
+@app.errorhandler(404)
+def page_not_found(error):
+    """Handle not found errors
+    Throw a 404 from code with `abort(404)`.
+    """
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def server_error(error):
+    """Handle internal errors
+    When not in debug mode, render a simple error page.
+    """
+    return render_template('500.html'), 500
 
 @app.route("/nodes")
 def nodes_page():
@@ -52,6 +66,11 @@ def nodes_page():
 def node_page(node_id):
     """Node details
     """
+    try:
+        node_id = int(node_id)
+    except ValueError:
+        abort(404)
+
     conn = psycopg2.connect("dbname=vagrant user=vagrant")
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     sql = """SELECT
@@ -66,7 +85,9 @@ def node_page(node_id):
 
     cur.execute(sql, (node_id, ))
 
-    # todo: 404 if rowcount != 1
+    if cur.rowcount != 1:
+        abort(404)
+
     data = cur.fetchone()
     node = Node(data)
     return render_template("node_single.html", node=node)
