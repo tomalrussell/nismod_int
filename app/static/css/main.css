@@ -1,3 +1,6 @@
+/**
+ * Top-level and utility
+ */
 html {
   box-sizing: border-box;
 }
@@ -8,6 +11,7 @@ html,
 body {
     margin: 0;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #666;
 }
 .clearfix:after {
     /* use on containers whose children are floated, to let them contribute
@@ -18,6 +22,36 @@ body {
     display: table;
     clear: both;
 }
+h1 {
+    font-size: 1.75em;
+    line-height: 1.25;
+    margin-top: 0.8em;
+    margin-bottom: 0.8em;
+    color: #006D78;
+}
+h2 {
+    font-size: 1.5em;
+    line-height: 1.4;
+    margin-top: 1em;
+    margin-bottom: 0.8em;
+    color: #006D78;
+}
+h3 {
+    font-size: 1.25em;
+    line-height: 1.4;
+    margin-top: 1em;
+    margin-bottom: 0.4em;
+    color: #7FA634;
+}
+h4 {
+    text-transform: uppercase;
+    color: #555;
+    font-size: 0.75em;
+    margin: 1em 0 0;
+}
+/**
+ * Header
+ */
 .page-header {
     width: 100%;
     padding: 1em;
@@ -39,6 +73,10 @@ body {
     float: right;
     margin: 12px 0; /* to vertically center, depends on .page-header h1 height */
 }
+
+/**
+ * Button / form styles
+ */
 .button-link {
     display: block;
     cursor: pointer;
@@ -103,6 +141,43 @@ body {
     margin: 0;
     padding: 0;
 }
+
+/**
+ * Table
+ */
+.report-table {
+    width: 100%;
+}
+.report-table th {
+    background-color: #777;
+    padding: 4px 6px;
+    text-align: left;
+}
+.report-table th,
+.report-table th a {
+    color: #fff;
+    font-weight: 500;
+    font-size: 1em;
+}
+.report-table th a {
+    display: block;
+}
+.report-table td {
+    padding: 2px 4px;
+    vertical-align: middle;
+    font-size: 1em;
+    background-color: #f8f9f9;
+}
+.report-table tr:nth-child(odd) td {
+    background-color: #f3f2f3;
+}
+.report-table tr:hover td {
+    background-color: #fee8d2;
+}
+
+/**
+ * Map
+ */
 .main-wrapper {
     display: flex;
     align-items: stretch;
@@ -143,18 +218,16 @@ body {
 .icon-dependent {
     box-shadow: #04ff00 0px 0px 10px 3px;
 }
+
+/**
+ * Map Sidebar
+ */
 .main-controls {
     order: 1;
     flex: 1 20%;
     overflow-y: scroll;
     min-width: 20em;
     padding: 0 0.5em;
-}
-.main-controls .details-key {
-    text-transform: uppercase;
-    color: #555;
-    font-size: 0.7em;
-    margin: 1em 0 0;
 }
 .main-controls .details-value {
     margin: 0.5em 0;
