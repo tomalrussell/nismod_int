@@ -1,25 +1,27 @@
 {% extends "base.html" %}
 {% block content %}
 <main class="content-wrapper">
-    <h1>Edit node</h1>
-    <form action="">
-        <h4>Name</h4>
-        <input type="text" name="name" value="{{ node.name }}" />
+    <h1>Node Details</h1>
+    <h4>Name</h4>
+    <p>{{ node.name }}</p>
 
-        <h4>Status</h4>
-        <p>{{node.status}}</p>
+    <h4>Status</h4>
+    <p>{{node.status}}</p>
 
-        <h4>Type</h4>
-        <select name="type">
-        {% for node_type in node_types %}
-            <option value="{{ node_type }}" {% if node.type is equalto node_type %} selected {% endif %}>
-                {{ node_type }}
-            </option>
-        {% endfor %}
-        </select>
+    <h4>Type</h4>
+    <p>{{ node.type }}</p>
 
-        <input type="reset" value="Cancel">
-        <input type="submit" value="Save">
-    </form>
+    <h4>Function</h4>
+    <p>{{node.function}}</p>
+
+    <h4>Condition</h4>
+    <p>{{node.condition}}</p>
+
+    <h4>Location</h4>
+    <p>Latitude: {{ node.lat }} Longitude: {{ node.lon }}</p>
+
+    <a href="/nodes" class="button-link">Back to nodes</a>
+    <a href="/nodes/{{ node.id }}?edit=true" class="button-link">Edit</a>
+
 </main>
 {% endblock %}
