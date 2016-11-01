@@ -20,8 +20,9 @@
     <h4>Location</h4>
     <p>Latitude: {{ node.lat }} Longitude: {{ node.lon }}</p>
 
-    <a href="/nodes" class="button-link">Back to nodes</a>
-    <a href="/nodes/{{ node.id }}?edit=true" class="button-link">Edit</a>
-
+    <div class="form-actions">
+        <a href="/nodes" class="button-link">Back to nodes</a>
+        <a href="/nodes/{{ node.id }}?edit=true" class="button-link">Edit</a>
+    </div>
 </main>
 {% endblock %}
