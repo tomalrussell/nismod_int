@@ -150,6 +150,12 @@ function addLayer(features){
                         var dependent_node = APP.nodes[id];
                         highlightDependency(this.feature, dependent_node.feature);
                     }, this);
+
+                    _.each(this.feature.properties.dependency_ids, function(id){
+                        var dependency_node = APP.nodes[id];
+                        highlightDependent(this.feature, dependency_node.feature);
+                    }, this);
+
                 }
             });
             return marker;
@@ -166,12 +172,20 @@ function showDetails(feature){
 }
 
 function highlightDependency(feature, dependency){
+    highlightAnother(feature, dependency, "icon-dependent", "#3399ff");
+}
+
+function highlightDependent(feature, dependent){
+    highlightAnother(feature, dependent, "icon-dependent", "#ff9933");
+}
+
+function highlightAnother(feature, dependency, className, colorCode){
     // add class to highlight dependency
     var marker = APP.layers[dependency.properties.type].getLayer(dependency.properties.type + dependency.properties.id);
-    marker._icon.classList.add("icon-dependent");
+    marker._icon.classList.add(className);
 
     // draw line from this feature to dependency
-    var line = L.geoJSON(turf.lineString([feature.geometry.coordinates, dependency.geometry.coordinates]), {color: "#3399ff"});
+    var line = L.geoJSON(turf.lineString([feature.geometry.coordinates, dependency.geometry.coordinates]), {color: colorCode});
     APP.layers.base_lines.addLayer(line);
 }
 
