@@ -6,6 +6,10 @@ var APP = window.APP = {
     // each layer contains related features (typically grouped by type)
     layers: {},
 
+    // hold another reference to nodes
+    // node_id => leaflet marker
+    nodes: {},
+
     // layer_key => boolean, indicating whether is layer is active or not
     activeLayers: {},
     utilLayerKeys: [],
@@ -38,7 +42,8 @@ function setupMap(){
     APP.utilLayerKeys.push("base_lines");
 }
 
-function setupMapData(data){
+function setupMapNodes(data){
+    // group nodes by type and add to map layers
     var features_by_type = _.groupBy(data.features, function(feature){
         return feature.properties.type;
     });
@@ -51,6 +56,17 @@ function setupMapData(data){
 
     var controls_form = document.querySelector(".main-controls");
     controls_form.addEventListener("change", updateActiveLayers);
+}
+
+function setupMapEdges(data){
+    // build array of dependent/dependency ids on each node
+    // - currently discarding other edge data
+    _.each(data.features, function(feature){
+        var from_node = APP.nodes[feature.properties.from_node_id]
+        var to_node = APP.nodes[feature.properties.to_node_id]
+        from_node.feature.properties.dependent_ids.push(feature.properties.to_node_id)
+        to_node.feature.properties.dependency_ids.push(feature.properties.from_node_id)
+    });
 }
 
 function getIconClass(type){
@@ -93,6 +109,14 @@ function addLayer(features){
 
             // set up id for ease of reference later
             marker._leaflet_id = feature.properties.type + feature.properties.id;
+            APP.nodes[feature.properties.id] = marker;
+
+            // set up array of dependent_ids and dependency_ids
+            // to be filled with data from edges
+            // - could do this server side?
+            // - each edge is currently just a straight-line dependency
+            feature.properties.dependent_ids = []
+            feature.properties.dependency_ids = []
 
             // define click interaction, to show details on focus
             marker.on("click", function(e){
@@ -100,14 +124,32 @@ function addLayer(features){
                     // remove focus from this feature
                     this._icon.classList.remove("icon-focus");
                     closeDetails(this.feature);
+
+                    // clear dependency lines
+                    APP.layers.base_lines.clearLayers();
+
+                    // remove focus from any dependent features
+                    _.each(document.querySelectorAll(".icon-dependent"), function(el){
+                        el.classList.remove("icon-dependent");
+                    });
+
                 } else {
                     // remove focus from any other features
-                    _.each(document.querySelectorAll(".icon-focus"), function(el){
-                        el.classList.remove("icon-focus");
+                    _.each(document.querySelectorAll(".icon-focus, .icon-dependent"), function(el){
+                        el.classList.remove("icon-focus", "icon-dependent");
                     });
                     // focus on this feature
                     this._icon.classList.add("icon-focus");
                     showDetails(this.feature);
+
+                    // clear dependency lines
+                    APP.layers.base_lines.clearLayers();
+
+                    // highlight dependencies
+                    _.each(this.feature.properties.dependent_ids, function(id){
+                        var dependent_node = APP.nodes[id];
+                        highlightDependency(this.feature, dependent_node.feature);
+                    }, this);
                 }
             });
             return marker;
@@ -116,6 +158,7 @@ function addLayer(features){
 }
 
 function showDetails(feature){
+    // populate node details element
     var mountNode = document.querySelector(".main-controls .node-details");
     var details_el = createDetailsEl(feature.properties);
     mountNode.innerHTML = "";
@@ -128,7 +171,7 @@ function highlightDependency(feature, dependency){
     marker._icon.classList.add("icon-dependent");
 
     // draw line from this feature to dependency
-    var line = L.geoJSON(turf.lineString([feature.geometry.coordinates,dependency.geometry.coordinates]), {color: "#3399ff"});
+    var line = L.geoJSON(turf.lineString([feature.geometry.coordinates, dependency.geometry.coordinates]), {color: "#3399ff"});
     APP.layers.base_lines.addLayer(line);
 }
 
@@ -136,12 +179,10 @@ function closeDetails(feature){
     // clear/close details sidebar
     var mountNode = document.querySelector(".main-controls .node-details");
     mountNode.innerHTML = "";
-
-    // clear all dependency lines
-    APP.layers.base_lines.clearLayers();
 }
 
 function updateTypeNav(){
+    // populate map layer checkbox list
     var nav_el = document.querySelector(".main-controls .node-types-nav");
     nav_el.innerHTML = "";
     var sorted_keys = _.keys(APP.activeLayers).sort()
@@ -156,6 +197,7 @@ function updateTypeNav(){
 }
 
 function updateActiveLayers(){
+    // read checkbox status to update map layers
     _.each(APP.activeLayers, function(was_active, key){
         var checkbox = document.querySelector("#node_type_"+key);
         var layer = APP.layers[key];
@@ -233,6 +275,22 @@ function clear_cache_and_reload(){
     window.location.reload(true);
 }
 
+
+function cachingFetch(url, options) {
+    // assume localStorage available
+    // - could 'cut the mustard' and fall back to no js for older browsers
+    let cached = localStorage.getItem(url)
+    if (cached !== null) {
+        return Promise.resolve(JSON.parse(cached));
+    }
+    return fetch(url, options).then(function(response){
+        return response.json().then(function(json){
+            localStorage.setItem(url, JSON.stringify(json));
+            return json;
+        });
+    });
+}
+
 function init(){
     var mapEl = document.querySelector("#main-map");
     if(mapEl){
@@ -246,21 +304,18 @@ function init(){
             });
         }
 
-        // assume localStorage available
-        // - could 'cut the mustard' and fall back to no js for older browsers
-        var cached = localStorage.getItem('gaza')
-        if(cached !== null){
-            var data = JSON.parse(cached);
-            setupMapData(data, APP.map);
-        } else {
-            fetch('/nodes.json?area=gaza')
-            .then(function(response){
-                return response.json().then(function(json){
-                    localStorage.setItem('gaza', JSON.stringify(json));
-                    setupMapData(json, APP.map);
-                });
+        // TODO handle 404, timeout
+        cachingFetch('/nodes.json?area=gaza')
+        .then(function(json){
+            setupMapNodes(json, APP.map);
+        })
+        .then(function(){
+            cachingFetch('/edges.json')
+            .then(function(json){
+                setupMapEdges(json, APP.map);
             });
-        }
+        });
+
     }
 }
 
