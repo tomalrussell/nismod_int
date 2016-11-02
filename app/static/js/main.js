@@ -210,8 +210,8 @@ function createDetailsEl(props){
         <i class="fa fa-{{ icon_class }}" aria-hidden="true"></i>
         {{ type_text }}
     </p>
-    <a href="/nodes/{{ id }}" class="button-link">View</a>
-    <a href="/nodes/{{ id }}?edit=true" class="button-link">Edit</a>`;
+    <a href="/nodes/{{ id }}.html" class="button-link">View</a>
+    <a href="/nodes/{{ id }}.html?edit=true" class="button-link">Edit</a>`;
     Mustache.parse(template);
 
     props.icon_class = getIconClass(props.type);
@@ -253,7 +253,7 @@ function init(){
             var data = JSON.parse(cached);
             setupMapData(data, APP.map);
         } else {
-            fetch('/data/gaza')
+            fetch('/nodes.json?area=gaza')
             .then(function(response){
                 return response.json().then(function(json){
                     localStorage.setItem('gaza', JSON.stringify(json));

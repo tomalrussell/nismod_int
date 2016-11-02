@@ -1,7 +1,7 @@
 """Web frontend - flask app
 """
 from dotenv import load_dotenv, find_dotenv
-from flask import Flask, request, make_response, render_template, safe_join, abort
+from flask import Flask, request, make_response, render_template, safe_join, abort, jsonify
 import json
 import os
 import psycopg2
@@ -45,7 +45,7 @@ def server_error(error):
 def get_conn():
     return psycopg2.connect("dbname=vagrant user=vagrant", cursor_factory=psycopg2.extras.DictCursor)
 
-@app.route("/nodes")
+@app.route("/nodes.html")
 def nodes_page():
     """List nodes
     """
@@ -55,41 +55,71 @@ def nodes_page():
 
     return render_template("node_list.html", nodes=nodes)
 
-@app.route("/nodes/<node_id>", methods=['GET', 'POST'])
+@app.route("/nodes.json")
+def nodes_json():
+    """Serve json data from postgres
+    """
+    # todo: push getting nodes down into app.node
+    # utility method to get NodeCollection.asJSON()
+    with get_conn() as conn:
+        area_name = request.args.get('area')
+        nodes = get_nodes(conn, area=area_name)
+        features = [node.as_geojson_feature_dict() for node in nodes]
+
+        geojson = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+        resp = make_response(json.dumps(geojson), 200)
+        resp.headers['Content-Type'] = "application/json"
+    return resp
+
+@app.route("/nodes/<node_id>.html")
 def node_page(node_id):
-    """Node details
+    """Show node page as HTML
     """
     node, node_types = get_node_and_types(node_id)
     is_edit = request.args.get('edit') == "true"
 
-    if not is_edit:
+    if is_edit:
+        return render_template("node_single_edit.html", node=node, node_types=node_types)
+    else:
         return render_template("node_single.html", node=node)
 
-    if request.method == 'POST':
-        data = request.form
-        if data.get("x-method") == "DELETE":
-            with get_conn() as conn:
-                node.delete(conn)
+@app.route("/nodes/<node_id>.json")
+def node_json(node_id):
+    """Return node data as JSON
+    """
+    node, node_types = get_node_and_types(node_id)
+    return jsonify(node=node, node_types=node_types)
 
-            return render_template("generic_deleted.html", type="Node")
+@app.route("/nodes/<node_id>.html", methods=['POST'])
+def node_change(node_id):
+    """Endpoint for update/delete
+    """
+    node, node_types = get_node_and_types(node_id)
 
-        else:
-            node.set_name(data.get("name"))
-            node.set_type(data.get("type"))
-            node.set_function(data.get("function"))
-            node.set_condition(data.get("condition"))
+    data = request.form
+    if data.get("x-method") == "DELETE":
+        with get_conn() as conn:
+            node.delete(conn)
 
-            if data.get("status_approved"):
-                node.set_status("approved")
-
-            if data.get("status_archived"):
-                node.set_status("archived")
-
-            with get_conn() as conn:
-                node.save(conn)
-            return render_template("node_single_edit.html", node=node, node_types=node_types)
+        return render_template("generic_deleted.html", type="Node")
 
     else:
+        node.set_name(data.get("name"))
+        node.set_type(data.get("type"))
+        node.set_function(data.get("function"))
+        node.set_condition(data.get("condition"))
+
+        if data.get("status_approved"):
+            node.set_status("approved")
+
+        if data.get("status_archived"):
+            node.set_status("archived")
+
+        with get_conn() as conn:
+            node.save(conn)
         return render_template("node_single_edit.html", node=node, node_types=node_types)
 
 def get_node_and_types(node_id):
@@ -122,24 +152,6 @@ def area_page(area_name):
     """Area details
     """
     return render_template("area_single.html", area=area_name)
-
-@app.route("/data/<area_name>")
-def serve_data(area_name):
-    """Serve json data from postgres
-    """
-    # todo: push getting nodes down into app.node
-    # utility method to get NodeCollection.asJSON()
-    with get_conn() as conn:
-        nodes = get_nodes(conn, area=area_name)
-        features = [node.as_geojson_feature_dict() for node in nodes]
-
-        geojson = {
-            "type": "FeatureCollection",
-            "features": features
-        }
-        resp = make_response(json.dumps(geojson), 200)
-        resp.headers['Content-Type'] = "application/json"
-    return resp
 
 if __name__ == "__main__":
     app.run(port=5050)

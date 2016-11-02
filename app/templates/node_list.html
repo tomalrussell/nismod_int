@@ -7,14 +7,16 @@
         <th>Name</th>
         <th>Status</th>
         <th>Type</th>
+        <th>Actions</th>
     </tr>
     </thead>
     <tbody>
     {%- for node in nodes %}
     <tr>
-        <td><a href="/nodes/{{ node.id }}">{{ node.name }}</a></td>
+        <td><a href="/nodes/{{ node.id }}.html">{{ node.name }}</a></td>
         <td>{{node.status}}</td>
         <td>{{node.type}}</td>
+        <td><a href="/nodes/{{ node.id }}.html?edit=true">Edit</a></td>
     </tr>
     {%- endfor %}
     </tbody>

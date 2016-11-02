@@ -108,10 +108,13 @@ class Node:
                 "type": self.type,
                 "function": self.function,
                 "condition": self.condition,
-                "last_updated": self.last_updated,
+                "last_updated": self.last_updated_timestamp(),
                 "status": self.status
             }
         }
+
+    def last_updated_timestamp(self):
+        return self.last_updated.strftime("%a, %d %b %Y %H:%M:%S %z")
 
     def set_name(self, name):
         self.name = name
