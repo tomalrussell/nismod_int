@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="content-wrapper">
+    <table class="edges report-table">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Sector</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {%- for edge in edges %}
+    <tr>
+        <td><a href="/edges/{{ edge.id }}.html">{{ edge.name }}</a></td>
+        <td>{{edge.sector}}</td>
+        <td><a href="/edges/{{ edge.id }}.html?edit=true">Edit</a></td>
+    </tr>
+    {%- endfor %}
+    </tbody>
+</main>
+{% endblock %}

@@ -10,6 +10,7 @@ import sys
 # todo: fix absolute/relative import (from app.node should work?)
 from node import Node, get_nodes
 from node_type import get_node_types
+from edge import Edge, get_edges
 
 # load environment variables
 load_dotenv(find_dotenv())
@@ -70,9 +71,7 @@ def nodes_json():
             "type": "FeatureCollection",
             "features": features
         }
-        resp = make_response(json.dumps(geojson), 200)
-        resp.headers['Content-Type'] = "application/json"
-    return resp
+    return jsonify(geojson)
 
 @app.route("/nodes/<node_id>.html")
 def node_page(node_id):
@@ -152,6 +151,30 @@ def area_page(area_name):
     """Area details
     """
     return render_template("area_single.html", area=area_name)
+
+@app.route("/edges.html")
+def edges_page():
+    """List edges
+    """
+    with get_conn() as conn:
+        # todo: include search/filter form, GET variables
+        edges = get_edges(conn)
+
+    return render_template("edge_list.html", edges=edges)
+
+@app.route("/edges.json")
+def edges_json():
+    """List edges as geojson
+    """
+    with get_conn() as conn:
+        edges = get_edges(conn)
+        features = [edge.as_geojson_feature_dict() for edge in edges]
+
+        geojson = {
+            "type": "FeatureCollection",
+            "features": features
+        }
+    return jsonify(geojson)
 
 if __name__ == "__main__":
     app.run(port=5050)
