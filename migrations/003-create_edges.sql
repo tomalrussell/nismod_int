@@ -1,6 +1,7 @@
 -- Edges are the connectors between assets in an infrastructure network and in
 -- the case of transport the assets that enable movement (e.g. roads, rail,
 -- cables, water transfer pipes)
+
 CREATE TABLE sos_i_edges (
     edge_id serial PRIMARY KEY -- Primary key and id field for table records
     , edge_name text -- Name of edge asset eg. A40
