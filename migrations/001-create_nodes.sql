@@ -16,6 +16,7 @@ CREATE TABLE sos_i_nodes (
     , status data_status DEFAULT 'staged' -- Data is staged on import, then manually approved and eventually archived
     , ref_key text -- Tracking code or number for connection to external data reference
     , location geography(POINT, 4326) -- Node geometry (GIS location, shape)
+    , properties jsonb -- Key-value map of additional node-specific attributes
 );
 
 -- create geographical index
