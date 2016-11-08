@@ -21,6 +21,11 @@ var APP = window.APP = {
             lon: 34.4,
             lat: 31.4,
             zoom: 11
+        },
+        uk_southeast: {
+            lon: 0.3,
+            lat: 51.8,
+            zoom: 9
         }
     },
 
@@ -30,7 +35,11 @@ var APP = window.APP = {
 
 function setupMap(){
     // set up leaflet map with plain geographical base layer
-    var map = APP.map = L.map('main-map').setView(APP.map_locations.gaza, APP.map_locations.gaza.zoom);
+    var map = APP.map = L.map('main-map', {
+        center: APP.map_locations.uk_southeast,
+        zoom: APP.map_locations.uk_southeast.zoom,
+        minZoom: 8
+    });
     var basemap_url = "http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
     L.tileLayer(basemap_url, {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions">CARTO</a>'
@@ -64,23 +73,30 @@ function setupMapEdges(data){
     _.each(data.features, function(feature){
         var from_node = APP.nodes[feature.properties.from_node_id]
         var to_node = APP.nodes[feature.properties.to_node_id]
-        from_node.feature.properties.dependent_ids.push(feature.properties.to_node_id)
-        to_node.feature.properties.dependency_ids.push(feature.properties.from_node_id)
+        if(from_node !== undefined){
+            from_node.feature.properties.dependent_ids.push(feature.properties.to_node_id)
+        }
+        if(to_node !== undefined){
+            to_node.feature.properties.dependency_ids.push(feature.properties.from_node_id)
+        }
     });
 }
 
 function getIconClass(type){
     // map from feature type to fontawesome icon
     var node_icon_class_by_type = {
+        "airport": 'plane',
         "bank": 'money',
         "electricity_source": 'bolt',
         "electricity_sink": 'bolt',
         "fuel": 'car',
         "hospital": 'hospital-o',
         "school": 'graduation-cap',
+        "seaport": 'ship',
         "tower": 'wifi',
         "waste_water_treatment": 'tint',
         "water_treatment": 'tint',
+        "water_tower": 'tint',
         "unknown": 'question'
     }
     var icon_class = node_icon_class_by_type[type];
@@ -319,7 +335,7 @@ function init(){
         }
 
         // TODO handle 404, timeout
-        cachingFetch('/nodes.json?area=gaza')
+        cachingFetch('/nodes.json?area=uk_southeast')
         .then(function(json){
             setupMapNodes(json, APP.map);
         })
