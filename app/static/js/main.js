@@ -150,16 +150,18 @@ function addLayer(features){
                     });
 
                 } else {
-                    // remove focus from any other features
-                    _.each(document.querySelectorAll(".icon-focus, .icon-dependent"), function(el){
-                        el.classList.remove("icon-focus", "icon-dependent");
-                    });
+                    if(!e.originalEvent.ctrlKey && !e.originalEvent.shiftKey){
+                        // remove focus from any other features
+                        _.each(document.querySelectorAll(".icon-focus, .icon-dependent"), function(el){
+                            el.classList.remove("icon-focus", "icon-dependent");
+                        });
+                        // clear dependency lines
+                        APP.layers.base_lines.clearLayers();
+                    }
+
                     // focus on this feature
                     this._icon.classList.add("icon-focus");
                     showDetails(this.feature);
-
-                    // clear dependency lines
-                    APP.layers.base_lines.clearLayers();
 
                     // highlight dependencies
                     _.each(this.feature.properties.dependent_ids, function(id){
